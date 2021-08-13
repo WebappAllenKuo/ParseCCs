@@ -3,7 +3,8 @@ using System.Linq;
 using NUnit.Framework;
 /*
 [V] 解析傳回訊息內容
-[working on] 內容有 at 開頭表示要 cc 的對象, 可能是零個,一個或多個
+[V] 內容有 at 開頭表示要 cc 的對象, 可能是零個,一個或多個
+[working on] 若連續二個 at 視為正常文字
  */
 namespace TestProject1
 {
@@ -46,6 +47,17 @@ namespace TestProject1
         
         [TestCase("@abc @def 123", "abc;def")]
         public void GetCCs_多個符合_傳回陣列(string context, string expected)
+        {
+            var sut = new StringParser();
+            
+            var result = sut.GetCCs(context);
+            string actual = result.Aggregate((acc, next) => acc + ";" + next);
+            
+            Assert.AreEqual(expected, actual);
+        }
+        
+        [TestCase("@abc @def @@123", "abc;def")]
+        public void GetCCs_多個at視為普通文字_傳回陣列(string context, string expected)
         {
             var sut = new StringParser();
             
