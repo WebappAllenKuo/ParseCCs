@@ -4,7 +4,8 @@ using NUnit.Framework;
 /*
 [V] 解析傳回訊息內容
 [V] 內容有 at 開頭表示要 cc 的對象, 可能是零個,一個或多個
-[working on] 若連續二個 at 視為正常文字
+[V] 若連續二個 at 視為正常文字
+[working on] 傳回解析後的 CC, message
  */
 namespace TestProject1
 {
@@ -12,7 +13,7 @@ namespace TestProject1
     public class Tests
     {
         [Test]
-        public void Parse_WhenCalled()
+        public void Parse_沒有at_傳回字串()
         {
             string context = "abc";
             var sut = new StringParser();
@@ -21,6 +22,34 @@ namespace TestProject1
             
             Assert.AreEqual(context, actual.Message);
         }
+        
+        [Test]
+        public void Parse_一個at_傳回CC及字串()
+        {
+            string context = "@abc 123";
+            var sut = new StringParser();
+            string expectedCC="abc", expectedMessage = "123";
+            
+            var actual = sut.Parse(context);
+            
+            Assert.AreEqual(expectedCC, actual.CCs[0]);
+            Assert.AreEqual(expectedMessage, actual.Message);
+        }
+        
+        [Test]
+        public void Parse_多個at_傳回CC及字串()
+        {
+            string context = "@abc @def 123 @@456";
+            var sut = new StringParser();
+            string expectedCC="abc;def", expectedMessage = "123 @@456";
+            
+            var result = sut.Parse(context);
+            string actual = result.CCs.Aggregate((acc, next) => acc + ";"+ next);
+            
+            Assert.AreEqual(expectedCC, actual);
+            Assert.AreEqual(expectedMessage, result.Message);
+        }
+       
         
         [TestCase("@abc", "abc")]
         [TestCase("@abc def", "abc")]
